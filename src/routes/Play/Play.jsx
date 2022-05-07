@@ -1,27 +1,28 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import getQuestion from "../../utils/getQuestion";
 import checkKey from "../../utils/checkKey";
 
 const Play = () => {
+  const questionNum = 10;
+  // const startTime = new Date();
   const questionLists = getQuestion();
   let rnd = Math.floor(Math.random() * questionLists.length);
-  const [state, setState] = useState(0); //表示する画面の判別　0:Top 1:Secone 2:Result
   const [question, setQuestion] = useState(questionLists[rnd]); //表示する問題
   const [keyName, setKeyName] = useState(); //入力されたキーを格納
-  const [correct_num, setCorrectNum] = useState(0); //正解数
-  const [type_num, setTypeNum] = useState(0); //タイピング数
-  const [question_num, setQuestionNum] = useState(10); //問題数
-  const [start_time, setStartTime] = useState(); //ゲーム開始時間
-  const [elapsed_time, setElapsedTime] = useState(); //経過時間
+  const [correctTypeNum, setCorrectTypeNum] = useState(0); //ミスタイプ数
+  const [typeNum, setTypeNum] = useState(0); //タイピング数
+  // const [questionNum, setQuestionNum] = useState(10); //問題数
+  const [startTime, setStartTime] = useState(new Date()); //ゲーム開始時間
+  const missTypeNum = typeNum - correctTypeNum;
 
   //タイピングされた時の処理
   useEffect(() => {
     const handlClick = (e) => {
       if (!(e.key === "Shift" || e.key === "Alt" || e.key === "Meta")) {
         setKeyName(e.key);
-        setTypeNum(() => type_num + 1);
+        setTypeNum(() => typeNum + 1);
       }
     };
 
@@ -33,21 +34,23 @@ const Play = () => {
       setKeyName(null);
       let rnd = Math.floor(Math.random() * questionLists.length);
       setQuestion(questionLists[rnd]);
-      setCorrectNum(() => correct_num + 1);
-      setQuestionNum(() => question_num - 1);
+      setCorrectTypeNum(() => correctTypeNum + 1);
     }
     return () => {
       document.removeEventListener("keydown", handlClick);
     };
-  }, [
-    correct_num,
-    question_num,
-    keyName,
-    question,
-    type_num,
-    state,
-    questionLists,
-  ]);
+  }, [questionNum, keyName, question, typeNum, questionLists, correctTypeNum]);
+
+  if (correctTypeNum === 10) {
+    const end_time = new Date();
+    const elapsedTime = end_time.getTime() - startTime.getTime();
+    return (
+      <Navigate
+        to="/result"
+        state={{ elapsedTime, missTypeNum, typeNum, questionNum }}
+      />
+    );
+  }
   return (
     <Wrapper>
       <Description>表示された数字または記号のキーを押してください</Description>
@@ -55,8 +58,8 @@ const Play = () => {
         {question}
       </Question>
       <BottomContent>
-        <QuestionNum>問題数:{question_num}</QuestionNum>
-        <AnswersNum>正解数:{correct_num}</AnswersNum>
+        <QuestionNum>問題数:{questionNum - correctTypeNum}</QuestionNum>
+        <AnswersNum>ミスタイプ数:{missTypeNum}</AnswersNum>
         <Link to="/">
           <BackButton>タイトルに戻る</BackButton>
         </Link>

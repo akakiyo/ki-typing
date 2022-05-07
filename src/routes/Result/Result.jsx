@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 // import { gql } from "apollo-boost";
 // import { useQuery } from "@apollo/react-hooks";
 
@@ -14,22 +14,21 @@ import { Link } from "react-router-dom";
 // `;
 
 const Result = (props) => {
-  let correct_num = props.correct_num;
-  let type_num = props.type_num;
-  let elapsed_time = props.elapsed_time;
-  let average_num, miss_num, correct_rate;
-
+  const location = useLocation();
+  const { elapsedTime, missTypeNum, typeNum, questionNum } = location.state;
   //   const { loading, error, data } = useQuery(GET_RESULT_QUERY, {
   //     variables: { correct_num, type_num, elapsed_time },
   //   });
 
   //経過時間
   let m, s, ms, second, minute;
-  s = Math.floor(elapsed_time / 1000);
+  s = Math.floor(elapsedTime / 1000);
   m = Math.floor(s / 60);
-  ms = ("00" + (elapsed_time % 6000)).slice(-3).slice(0, 2);
+  ms = ("00" + (elapsedTime % 6000)).slice(-3).slice(0, 2);
   second = ("00" + s).slice(-2);
   minute = ("00" + m).slice(-2);
+  const averageNum = Math.round((questionNum / s) * 10) / 10;
+  const correctRate = Math.round((questionNum / typeNum) * 100 * 10) / 10;
 
   //   if (loading) {
   //     return <Loading>Loading...</Loading>;
@@ -61,16 +60,16 @@ const Result = (props) => {
             </Value>
           </ResultList>
           <ResultList>
-            ・正しく打ったキーの数:<Value>{props.correct_num}</Value>
+            ・問題数:<Value>{questionNum}</Value>
           </ResultList>
           <ResultList>
-            ・平均キータイプ数:<Value>{average_num}</Value>回/秒
+            ・平均キータイプ数:<Value>{averageNum}</Value>回/秒
           </ResultList>
           <ResultList>
-            ・ミスタイプ数:<Value>{miss_num}</Value>
+            ・ミスタイプ数:<Value>{missTypeNum}</Value>
           </ResultList>
           <ResultList>
-            ・正解率:<Value>{correct_rate}</Value>%
+            ・正解率:<Value>{correctRate}</Value>%
           </ResultList>
         </PlayResult>
         <Link to={"/"}>
@@ -93,7 +92,6 @@ const Title = styled.div`
   font-size: 72px;
   line-height: 84px;
   letter-spacing: 0.1em;
-
   text-align: center;
 `;
 const PlayResult = styled.div`
@@ -101,6 +99,7 @@ const PlayResult = styled.div`
   text-align: left;
 `;
 const ResultList = styled.div`
+  margin-top: 20px;
   color: #ffffff;
   font-family: Roboto;
   font-style: normal;
@@ -110,23 +109,22 @@ const ResultList = styled.div`
   letter-spacing: 0.1em;
 `;
 const Value = styled.div`
+  display: inline-block;
+  color: #16c4fd;
   font-style: normal;
   font-weight: bold;
   font-size: 18px;
   line-height: 21px;
-  color: #16c4fd;
-
-  display: inline-block;
 `;
 const BackButton = styled.button`
   width: 169px;
   height: 54px;
   color: #fffcfc;
-
   border-radius: 40px;
   background: #16c4fd;
   margin-right: 100px;
   margin-top: 250px;
+  border: none;
 `;
 
 const Loading = styled.h3`
